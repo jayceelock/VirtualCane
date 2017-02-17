@@ -12,6 +12,8 @@ public class RunnableVibrate implements Runnable
 
     private double depth = 0.0;
 
+    private boolean running = false;
+
     public RunnableVibrate(Vibrator vibrator)
     {
         this.vibrator = vibrator;
@@ -25,12 +27,19 @@ public class RunnableVibrate implements Runnable
         long[] pwmSignal = generatePWM(this.depth, VIBRATION_DELAY);
 
         vibrator.vibrate(pwmSignal, -1);
+
+        running = false;
     }
 
     public void setDepth(double depth)
     {
         this.depth = depth;
-        this.run();
+
+        if(!running)
+        {
+            this.run();
+            running = true;
+        }
     }
 
     public double getDepth()

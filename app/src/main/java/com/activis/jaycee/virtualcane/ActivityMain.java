@@ -27,6 +27,8 @@ public class ActivityMain extends Activity
     private Tango tango;
     private TangoCameraPreview tangoCameraPreview;
 
+    private Vibrator vibrator;
+
     private RunnableVibrate vibrateRunnable;
 
     private boolean tangoConnected = false;
@@ -36,6 +38,7 @@ public class ActivityMain extends Activity
     {
         super.onCreate(savedInstanceState);
 
+        vibrator = (Vibrator)this.getSystemService(Context.VIBRATOR_SERVICE);
         tangoCameraPreview = new TangoCameraPreview(this);
 
         setContentView(tangoCameraPreview);
@@ -47,7 +50,7 @@ public class ActivityMain extends Activity
     {
         super.onResume();
 
-        vibrateRunnable = new RunnableVibrate((Vibrator)this.getSystemService(Context.VIBRATOR_SERVICE));
+        vibrateRunnable = new RunnableVibrate(vibrator);
 
         if(!tangoConnected)
         {
@@ -123,6 +126,8 @@ public class ActivityMain extends Activity
             tango.disconnect();
             tangoConnected = false;
         }
+
+        vibrator.cancel();
 
         super.onPause();
     }
