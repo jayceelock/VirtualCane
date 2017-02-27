@@ -1,22 +1,19 @@
 package com.activis.jaycee.virtualcane;
 
-import android.os.Vibrator;
 import android.util.Log;
 
-public class RunnableVibrate implements Runnable
+class RunnableVibrate implements Runnable
 {
     private static final String TAG = RunnableVibrate.class.getSimpleName();
     private static final int VIBRATION_DELAY = 150;
 
-    private Vibrator vibrator;
+    private ActivityMain activityMain;
 
     private double depth = 0.0;
 
-    private boolean running = false;
-
-    public RunnableVibrate(Vibrator vibrator)
+    RunnableVibrate(ActivityMain activityMain)
     {
-        this.vibrator = vibrator;
+        this.activityMain = activityMain;
     }
 
     @Override
@@ -26,26 +23,22 @@ public class RunnableVibrate implements Runnable
 
         long[] pwmSignal = generatePWM(this.depth, VIBRATION_DELAY);
 
-        vibrator.vibrate(pwmSignal, -1);
-
-        running = false;
+        activityMain.getVibrator().vibrate(pwmSignal, -1);
     }
 
-    public void setDepth(double depth)
+    void setDepth(double depth)
     {
         this.depth = depth;
         this.run();
     }
 
-    public double getDepth()
-    {
-        return this.depth;
-    }
-
-    public long[] generatePWM(double distance, int duration)
+    long[] generatePWM(double distance, int duration)
     {
         double intensity = -distance + 1.15f;
         intensity = intensity >= 1.f ? 1.f : intensity;
+
+        activityMain.getClassMetrics().updateVibrationIntensity(intensity);
+        activityMain.getClassMetrics().writeWiFi();
 
         long[] pwmSignal = {(long) ((1 - intensity) * duration), (long)(intensity * duration)};
 

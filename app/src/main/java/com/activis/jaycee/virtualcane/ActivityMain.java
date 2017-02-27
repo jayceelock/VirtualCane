@@ -22,7 +22,6 @@ import java.util.ArrayList;
 public class ActivityMain extends Activity
 {
     private static final String TAG = ActivityMain.class.getSimpleName();
-    private static final double CANE_RADIUS = 0.01;
 
     private Tango tango;
     private TangoCameraPreview tangoCameraPreview;
@@ -30,6 +29,7 @@ public class ActivityMain extends Activity
     private Vibrator vibrator;
 
     private RunnableVibrate vibrateRunnable;
+    private ClassMetrics metrics;
 
     private boolean tangoConnected = false;
 
@@ -40,6 +40,8 @@ public class ActivityMain extends Activity
 
         vibrator = (Vibrator)this.getSystemService(Context.VIBRATOR_SERVICE);
         tangoCameraPreview = new TangoCameraPreview(this);
+
+        metrics = new ClassMetrics();
 
         setContentView(tangoCameraPreview);
     }
@@ -54,8 +56,6 @@ public class ActivityMain extends Activity
             /* Start Tango connection on separate thread to avoid stutter */
             tango = new Tango(ActivityMain.this, new Runnable()
             {
-                double depth = 10;
-
                 @Override
                 public void run()
                 {
@@ -66,31 +66,7 @@ public class ActivityMain extends Activity
                         ArrayList<TangoCoordinateFramePair> framePairList = new ArrayList<>();
                         framePairList.add(new TangoCoordinateFramePair(TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE, TangoPoseData.COORDINATE_FRAME_DEVICE));
 
-                        tango.connectListener(framePairList, new Tango.TangoUpdateCallback()
-                        {
-                            @Override
-                            public void onFrameAvailable(int cameraId)
-                            {
-                                if(cameraId == TangoCameraIntrinsics.TANGO_CAMERA_COLOR)
-                                {
-                                    tangoCameraPreview.onFrameAvailable();
-                                }
-                            }
-
-                            @Override
-                            public void onPointCloudAvailable(TangoPointCloudData cloud)
-                            {
-                                for(int i = 0; i < cloud.numPoints - 3; i += 3)
-                                {
-                                    if(cloud.points.get(i) * cloud.points.get(i) + cloud.points.get(i + 1) * cloud.points.get(i + 1) < CANE_RADIUS * CANE_RADIUS)
-                                    {
-                                        depth = cloud.points.get(i + 2);
-                                    }
-                                }
-
-                                vibrateRunnable.setDepth(depth);
-                            }
-                        });
+                        tango.connectListener(framePairList, new ClassTangoUpdateCallback(ActivityMain.this));
 
                         TangoConfig tangoConfig = tango.getConfig(TangoConfig.CONFIG_TYPE_DEFAULT);
                         tangoConfig.putBoolean(TangoConfig.KEY_BOOLEAN_AUTORECOVERY, true);
@@ -112,7 +88,7 @@ public class ActivityMain extends Activity
                 }
             });
 
-            vibrateRunnable = new RunnableVibrate(vibrator);
+            vibrateRunnable = new RunnableVibrate(ActivityMain.this);
         }
     }
 
@@ -130,4 +106,10 @@ public class ActivityMain extends Activity
 
         super.onPause();
     }
+
+    public RunnableVibrate getRunnableVibrate() { return this.vibrateRunnable; }
+    public TangoCameraPreview getTangoCameraPreview() { return this.tangoCameraPreview; }
+    public ClassMetrics getClassMetrics() { return this.metrics; }
+    public Vibrator getVibrator() { return this.vibrator; }
+    public Tango getTango() { return this.tango; }
 }
