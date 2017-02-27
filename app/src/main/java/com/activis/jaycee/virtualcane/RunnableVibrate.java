@@ -34,12 +34,7 @@ public class RunnableVibrate implements Runnable
     public void setDepth(double depth)
     {
         this.depth = depth;
-
-        if(!running)
-        {
-            this.run();
-            running = true;
-        }
+        this.run();
     }
 
     public double getDepth()
@@ -52,7 +47,7 @@ public class RunnableVibrate implements Runnable
         double intensity = -distance + 1.15f;
         intensity = intensity >= 1.f ? 1.f : intensity;
 
-        long[] pwmSignal = {(long) ((1 - intensity) * duration), (long) (intensity * duration)};
+        long[] pwmSignal = {(long) ((1 - intensity) * duration), (long)(intensity * duration)};
 
         return pwmSignal;
     }

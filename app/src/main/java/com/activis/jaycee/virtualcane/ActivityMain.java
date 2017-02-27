@@ -42,7 +42,6 @@ public class ActivityMain extends Activity
         tangoCameraPreview = new TangoCameraPreview(this);
 
         setContentView(tangoCameraPreview);
-
     }
 
     @Override
@@ -50,13 +49,13 @@ public class ActivityMain extends Activity
     {
         super.onResume();
 
-        vibrateRunnable = new RunnableVibrate(vibrator);
-
         if(!tangoConnected)
         {
             /* Start Tango connection on separate thread to avoid stutter */
             tango = new Tango(ActivityMain.this, new Runnable()
             {
+                double depth = 10;
+
                 @Override
                 public void run()
                 {
@@ -81,11 +80,9 @@ public class ActivityMain extends Activity
                             @Override
                             public void onPointCloudAvailable(TangoPointCloudData cloud)
                             {
-                                double depth = 5000;
                                 for(int i = 0; i < cloud.numPoints - 3; i += 3)
                                 {
-                                    if(cloud.points.get(i + 2) < depth
-                                            && cloud.points.get(i) * cloud.points.get(i) + cloud.points.get(i + 1) * cloud.points.get(i + 1) < CANE_RADIUS * CANE_RADIUS)
+                                    if(cloud.points.get(i) * cloud.points.get(i) + cloud.points.get(i + 1) * cloud.points.get(i + 1) < CANE_RADIUS * CANE_RADIUS)
                                     {
                                         depth = cloud.points.get(i + 2);
                                     }
@@ -114,6 +111,8 @@ public class ActivityMain extends Activity
                     }
                 }
             });
+
+            vibrateRunnable = new RunnableVibrate(vibrator);
         }
     }
 
