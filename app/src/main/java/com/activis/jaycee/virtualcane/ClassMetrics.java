@@ -62,6 +62,12 @@ class ClassMetrics
         csvString += String.valueOf(vibrationIntensity);
         csvString += DELIMITER;
 
+        csvString += String.valueOf(0);
+        csvString += DELIMITER;
+
+        csvString += String.valueOf(0);
+        csvString += DELIMITER;
+
         /* WRITE TO WIFI PORT */
         if(dataStreamer == null || dataStreamer.getStatus() != AsyncTask.Status.RUNNING)
         {

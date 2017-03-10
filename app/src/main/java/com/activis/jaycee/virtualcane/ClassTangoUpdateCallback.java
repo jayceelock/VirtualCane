@@ -1,5 +1,7 @@
 package com.activis.jaycee.virtualcane;
 
+import android.util.Log;
+
 import com.google.atap.tangoservice.Tango;
 import com.google.atap.tangoservice.TangoCameraIntrinsics;
 import com.google.atap.tangoservice.TangoCoordinateFramePair;
@@ -19,6 +21,7 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
     {
         this.activityMain = activityMain;
     }
+
     @Override
     public void onFrameAvailable(int cameraId)
     {
@@ -49,5 +52,6 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
     public void onPoseAvailable(TangoPoseData pose)
     {
         activityMain.getClassMetrics().updatePoseData(pose);
+        Log.wtf(TAG, String.format("x: %f y: %f z: %f qx: %f qy: %f qz: %f qw: %f", pose.translation[0], pose.translation[1], pose.translation[2], pose.rotation[0], pose.rotation[1], pose.rotation[2], pose.rotation[3]));
     }
 }
