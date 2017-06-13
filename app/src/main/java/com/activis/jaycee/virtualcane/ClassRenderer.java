@@ -1,19 +1,22 @@
 package com.activis.jaycee.virtualcane;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.MotionEvent;
 
-import com.google.atap.tangoservice.TangoPointCloudData;
 import com.google.atap.tangoservice.TangoPoseData;
 import com.projecttango.tangosupport.TangoSupport;
 
+import org.rajawali3d.Object3D;
 import org.rajawali3d.materials.Material;
 import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.StreamingTexture;
 import org.rajawali3d.math.Matrix4;
 import org.rajawali3d.math.Quaternion;
+import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.ScreenQuad;
+import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
 
 import javax.microedition.khronos.opengles.GL10;
@@ -21,7 +24,6 @@ import javax.microedition.khronos.opengles.GL10;
 public class ClassRenderer extends Renderer
 {
     private static final String TAG = ClassRenderer.class.getSimpleName();
-    private static final int MAX_NUMBER_OF_POINTS = 60000;
 
     private float[] textureCoords0 = new float[]{0.0F, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F, 0.0F};
 
@@ -29,7 +31,7 @@ public class ClassRenderer extends Renderer
 
     private ATexture tangoCameraTexture;
     private ScreenQuad screenBackgroundQuad;
-    private ClassPointCloudRenderer pointCloud;
+    private Sphere point;
 
     public ClassRenderer(Context context)
     {
@@ -64,27 +66,43 @@ public class ClassRenderer extends Renderer
         }
         getCurrentScene().addChild(screenBackgroundQuad);
 
-        /* Add point cloud to scene */
-        //pointCloud = new ClassPointCloudRenderer(MAX_NUMBER_OF_POINTS, 4);
-        //getCurrentScene().addChild(pointCloud);
+        /* Initialise Depth Point */
+        Material pointMaterial = new Material();
+        pointMaterial.setColor(Color.GREEN);
+        point = new Sphere(0.01f, 24, 24);
+        point.setMaterial(pointMaterial);
+        point.setPosition(0, 0, -1);
+
+        getCurrentScene().addChild(point);
     }
 
     @Override
-    public void onOffsetsChanged(float xOffset, float yOffset, float xOffsetStep, float yOffsetStep, int xPixelOffset, int yPixelOffset)
-    {
-    }
+    public void onOffsetsChanged(float xOffset, float yOffset, float xOffsetStep, float yOffsetStep, int xPixelOffset, int yPixelOffset) { }
 
     @Override
     public void onTouchEvent(MotionEvent event) { }
 
-
-    public void updatePointCloud(TangoPointCloudData pointCloudData, float[] openGlTdepth)
+    public void setDepthPoint(Vector3 position)
     {
-        pointCloud.updateCloud(pointCloudData);
-        Matrix4 openGlTdepthMatrix = new Matrix4(openGlTdepth);
-        pointCloud.setPosition(openGlTdepthMatrix.getTranslation());
-        // Conjugating the Quaternion is needed because Rajawali uses left-handed convention.
-        pointCloud.setOrientation(new Quaternion().fromMatrix(openGlTdepthMatrix).conjugate());
+        if(point != null)
+        {
+            Object3D obj = getCurrentScene().getChildrenCopy().get(1);
+            obj.setPosition(position.x, position.y, position.z);
+            
+            if(position.z < -1.15)
+            {
+                obj.setColor(Color.GREEN);
+            }
+            else
+            {
+                obj.setColor(Color.RED);
+            }
+        }
+    }
+
+    public Vector3 getDepthPointPosition()
+    {
+        return getCurrentScene().getChildrenCopy().get(1).getPosition();
     }
 
     /* Handle screen orientation changes.

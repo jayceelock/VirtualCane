@@ -6,9 +6,13 @@ import android.util.Log;
 import com.google.atap.tangoservice.Tango;
 import com.google.atap.tangoservice.TangoCameraIntrinsics;
 import com.google.atap.tangoservice.TangoCoordinateFramePair;
+import com.google.atap.tangoservice.TangoInvalidException;
 import com.google.atap.tangoservice.TangoPointCloudData;
 import com.google.atap.tangoservice.TangoPoseData;
 import com.projecttango.tangosupport.TangoSupport;
+
+import org.rajawali3d.math.Quaternion;
+import org.rajawali3d.math.vector.Vector3;
 
 class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
 {
@@ -18,6 +22,7 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
     private ActivityMain activityMain;
 
     private float depth = 10.f;
+    private Vector3 depthPointPosition = new Vector3(0, 0, 0);
 
     ClassTangoUpdateCallback(ActivityMain activityMain)
     {
@@ -41,22 +46,50 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
     @Override
     public void onPointCloudAvailable(TangoPointCloudData cloud)
     {
-        for(int i = 0; i < cloud.numPoints - 4; i += 4)
+        /* for(int i = 0; i < cloud.numPoints - 4; i += 4)
         {
             if(cloud.points.get(i) * cloud.points.get(i) + cloud.points.get(i + 1) * cloud.points.get(i + 1) < CANE_RADIUS * CANE_RADIUS)
             {
                 depth = cloud.points.get(i + 2);
+                depthPointPosition.setAll((double)cloud.points.get(i), (double)cloud.points.get(i + 1), -(double)cloud.points.get(i + 2));
+            }
+        }*/
+        try
+        {
+            TangoPoseData oglTdepthPose = TangoSupport.getPoseAtTime(
+                    cloud.timestamp,
+                    TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
+                    TangoPoseData.COORDINATE_FRAME_CAMERA_COLOR,
+                    TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
+                    TangoSupport.TANGO_SUPPORT_ENGINE_TANGO,
+                    TangoSupport.ROTATION_IGNORED);
+
+            TangoPoseData oglTcolorPose = TangoSupport.getPoseAtTime(
+                    activityMain.getRGBTimestamp(),
+                    TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
+                    TangoPoseData.COORDINATE_FRAME_CAMERA_COLOR,
+                    TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
+                    TangoSupport.TANGO_SUPPORT_ENGINE_TANGO,
+                    TangoSupport.ROTATION_IGNORED);
+
+            float[] point = TangoSupport.getDepthAtPointNearestNeighbor(cloud,
+                    oglTdepthPose.translation,
+                    oglTdepthPose.rotation,
+                    0.5f, 0.5f,
+                    activityMain.getDisplayRotation(),
+                    oglTcolorPose.translation,
+                    oglTcolorPose.rotation);
+            if(point != null)
+            {
+                depthPointPosition.setAll((double) point[0], (double) point[1], (double) point[2]);
+                depth = -point[2];
             }
         }
+        catch(TangoInvalidException e)
+        {
+            Log.e(TAG, "Tango invalid: could not detect point. " + e);
+        }
         double timestamp = activityMain.getTango().getPoseAtTime(0.0, new TangoCoordinateFramePair(TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE, TangoPoseData.COORDINATE_FRAME_DEVICE)).timestamp;
-
-        /*TangoSupport.TangoMatrixTransformData transform = TangoSupport.getMatrixTransformAtTime(cloud.timestamp,
-                        TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
-                        TangoPoseData.COORDINATE_FRAME_CAMERA_DEPTH,
-                        TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
-                        TangoSupport.TANGO_SUPPORT_ENGINE_TANGO,
-                        TangoSupport.ROTATION_IGNORED); */
-        //activityMain.getRenderer().updatePointCloud(cloud, transform.matrix);
 
         activityMain.getRunnableVibrate().setDepth(depth);
 
@@ -72,7 +105,9 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
     @Override
     public void onPoseAvailable(TangoPoseData pose)
     {
+        activityMain.getRenderer().setDepthPoint(depthPointPosition);
+
         activityMain.getClassMetrics().updatePoseData(pose);
-        // Log.wtf(TAG, String.format("x: %f y: %f z: %f qx: %f qy: %f qz: %f qw: %f", pose.translation[0], pose.translation[1], pose.translation[2], pose.rotation[0], pose.rotation[1], pose.rotation[2], pose.rotation[3]));
+        Log.d(TAG, String.format("Z: %f", -activityMain.getRenderer().getDepthPointPosition().z));
     }
 }

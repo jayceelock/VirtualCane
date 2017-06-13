@@ -62,7 +62,7 @@ public class ClassRajawaliFrameCallback extends ASceneFrameCallback
                  {
                      /* Calculate the camera color pose at the camera frame update time in OpenGL engine. */
                      TangoPoseData poseData = TangoSupport.getPoseAtTime(activityMain.getRGBTimestamp(),
-                             TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,
+                             TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
                              TangoPoseData.COORDINATE_FRAME_CAMERA_COLOR,
                              TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
                              TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
