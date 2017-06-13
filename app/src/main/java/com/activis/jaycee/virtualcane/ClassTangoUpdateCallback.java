@@ -1,5 +1,6 @@
 package com.activis.jaycee.virtualcane;
 
+import android.opengl.GLSurfaceView;
 import android.util.Log;
 
 import com.google.atap.tangoservice.Tango;
@@ -7,6 +8,7 @@ import com.google.atap.tangoservice.TangoCameraIntrinsics;
 import com.google.atap.tangoservice.TangoCoordinateFramePair;
 import com.google.atap.tangoservice.TangoPointCloudData;
 import com.google.atap.tangoservice.TangoPoseData;
+import com.projecttango.tangosupport.TangoSupport;
 
 class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
 {
@@ -27,14 +29,19 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
     {
         if(cameraId == TangoCameraIntrinsics.TANGO_CAMERA_COLOR)
         {
-            activityMain.getTangoCameraPreview().onFrameAvailable();
+            if(activityMain.getSurfaceView().getRenderMode() != GLSurfaceView.RENDERMODE_WHEN_DIRTY)
+            {
+                activityMain.getSurfaceView().setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+            }
+            activityMain.getIsFrameAvailable().set(true);
+            activityMain.getSurfaceView().requestRender();
         }
     }
 
     @Override
     public void onPointCloudAvailable(TangoPointCloudData cloud)
     {
-        for(int i = 0; i < cloud.numPoints - 3; i += 3)
+        for(int i = 0; i < cloud.numPoints - 4; i += 4)
         {
             if(cloud.points.get(i) * cloud.points.get(i) + cloud.points.get(i + 1) * cloud.points.get(i + 1) < CANE_RADIUS * CANE_RADIUS)
             {
@@ -42,6 +49,14 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
             }
         }
         double timestamp = activityMain.getTango().getPoseAtTime(0.0, new TangoCoordinateFramePair(TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE, TangoPoseData.COORDINATE_FRAME_DEVICE)).timestamp;
+
+        /*TangoSupport.TangoMatrixTransformData transform = TangoSupport.getMatrixTransformAtTime(cloud.timestamp,
+                        TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
+                        TangoPoseData.COORDINATE_FRAME_CAMERA_DEPTH,
+                        TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
+                        TangoSupport.TANGO_SUPPORT_ENGINE_TANGO,
+                        TangoSupport.ROTATION_IGNORED); */
+        //activityMain.getRenderer().updatePointCloud(cloud, transform.matrix);
 
         activityMain.getRunnableVibrate().setDepth(depth);
 

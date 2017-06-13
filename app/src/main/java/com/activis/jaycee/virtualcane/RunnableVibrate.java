@@ -51,7 +51,7 @@ class RunnableVibrate implements Runnable
         intensity = intensity >= 1.f ? 1.f : intensity;
 
         activityMain.getClassMetrics().updateVibrationIntensity(intensity);
-        activityMain.getClassMetrics().writeWiFi();
+        //activityMain.getClassMetrics().writeWiFi();
 
         long[] pwmSignal = {(long) ((1 - intensity) * duration), (long)(intensity * duration)};
 
