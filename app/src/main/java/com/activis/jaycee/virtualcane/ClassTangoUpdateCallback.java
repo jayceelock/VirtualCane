@@ -15,7 +15,7 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
 
     private ActivityMain activityMain;
 
-    private double depth = 10;
+    private float depth = 10.f;
 
     ClassTangoUpdateCallback(ActivityMain activityMain)
     {
@@ -44,6 +44,12 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
         double timestamp = activityMain.getTango().getPoseAtTime(0.0, new TangoCoordinateFramePair(TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE, TangoPoseData.COORDINATE_FRAME_DEVICE)).timestamp;
 
         activityMain.getRunnableVibrate().setDepth(depth);
+
+        if(!activityMain.getRunnableVibrate().getIsRunning())
+        {
+            //activityMain.getRunnableVibrate().run();
+        }
+
         activityMain.getClassMetrics().updateDistanceToObstacle(depth);
         activityMain.getClassMetrics().updateTimestamp(timestamp);
     }
@@ -52,6 +58,6 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
     public void onPoseAvailable(TangoPoseData pose)
     {
         activityMain.getClassMetrics().updatePoseData(pose);
-        Log.wtf(TAG, String.format("x: %f y: %f z: %f qx: %f qy: %f qz: %f qw: %f", pose.translation[0], pose.translation[1], pose.translation[2], pose.rotation[0], pose.rotation[1], pose.rotation[2], pose.rotation[3]));
+        // Log.wtf(TAG, String.format("x: %f y: %f z: %f qx: %f qy: %f qz: %f qw: %f", pose.translation[0], pose.translation[1], pose.translation[2], pose.rotation[0], pose.rotation[1], pose.rotation[2], pose.rotation[3]));
     }
 }

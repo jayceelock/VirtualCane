@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "25.0.2"
+    buildToolsVersion "25.0.3"
     defaultConfig {
         applicationId "com.activis.jaycee.virtualcane"
         minSdkVersion 19
@@ -36,23 +36,10 @@ android {
     }
 }
 
-def external_lib_prefix = null
-if (project.hasProperty("Tango.catkin_devel_prefix")) {
-    external_lib_prefix = project.property("Tango.catkin_devel_prefix")
-} else {
-    // Building in standalone sample form.
-    external_lib_prefix = "/home/jaycee/Android/Sdk/add-ons/tango-sdk/java_sdk"
-}
-
-repositories{
-    flatDir{
-        dirs external_lib_prefix + '/tango_support_api'
-        dirs external_lib_prefix + '/tango_client_api'
-    }
-}
-
 dependencies {
+    apply from: '../version.gradle'
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile (name: 'tango_java_lib', ext: 'jar')
-    compile (name: 'tango_support_java_lib', ext: 'aar')
+    compile "org.rajawali3d:rajawali:1.1.777@aar"
+    compile "com.google.tango:sdk-base:${release_version}"
+    compile "com.google.tango:support-base:${release_version}"
 }

@@ -9,7 +9,9 @@ class RunnableVibrate implements Runnable
 
     private ActivityMain activityMain;
 
-    private double depth = 0.0;
+    private float depth = 10.f;
+
+    private boolean isRunning = false;
 
     RunnableVibrate(ActivityMain activityMain)
     {
@@ -19,6 +21,7 @@ class RunnableVibrate implements Runnable
     @Override
     public void run()
     {
+        isRunning = true;
         Log.i(TAG, String.format("Average depth is: %f", this.depth));
 
         long[] pwmSignal = generatePWM(this.depth, VIBRATION_DELAY);
@@ -26,13 +29,23 @@ class RunnableVibrate implements Runnable
         activityMain.getVibrator().vibrate(pwmSignal, -1);
     }
 
-    void setDepth(double depth)
+    void setDepth(float depth)
     {
         this.depth = depth;
         this.run();
     }
 
-    long[] generatePWM(double distance, int duration)
+    public boolean getIsRunning()
+    {
+        return this.isRunning;
+    }
+
+    public void setIsRunning(boolean isRunning)
+    {
+        this.isRunning = isRunning;
+    }
+
+    long[] generatePWM(float distance, int duration)
     {
         double intensity = -distance + 1.15f;
         intensity = intensity >= 1.f ? 1.f : intensity;

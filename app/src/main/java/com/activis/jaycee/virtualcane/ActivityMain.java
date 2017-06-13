@@ -100,6 +100,7 @@ public class ActivityMain extends Activity
             tangoCameraPreview.disconnectFromTangoCamera();
             tango.disconnect();
             tangoConnected = false;
+            vibrateRunnable.setIsRunning(false);
         }
 
         vibrator.cancel();
