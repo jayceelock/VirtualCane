@@ -17,7 +17,6 @@ import org.rajawali3d.math.vector.Vector3;
 class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
 {
     private static final String TAG = ClassTangoUpdateCallback.class.getSimpleName();
-    private static final double CANE_RADIUS = 0.01;
 
     private ActivityMain activityMain;
 

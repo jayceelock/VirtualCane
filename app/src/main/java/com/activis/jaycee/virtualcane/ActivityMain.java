@@ -1,35 +1,45 @@
 package com.activis.jaycee.virtualcane;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.hardware.display.DisplayManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Vibrator;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Display;
+import android.widget.Toast;
 
 import com.google.atap.tangoservice.Tango;
 import com.google.atap.tangoservice.TangoCameraIntrinsics;
-import com.google.atap.tangoservice.TangoCameraPreview;
 import com.google.atap.tangoservice.TangoConfig;
 import com.google.atap.tangoservice.TangoCoordinateFramePair;
 import com.google.atap.tangoservice.TangoErrorException;
+import com.google.atap.tangoservice.TangoInvalidException;
 import com.google.atap.tangoservice.TangoOutOfDateException;
-import com.google.atap.tangoservice.TangoPointCloudData;
 import com.google.atap.tangoservice.TangoPoseData;
 import com.projecttango.tangosupport.TangoSupport;
 
 import org.rajawali3d.view.SurfaceView;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ActivityMain extends Activity
 {
     private static final String TAG = ActivityMain.class.getSimpleName();
     private static final int INVALID_TEXTURE_ID = 0;
+
+    private static final String CAMERA_PERMISSION = Manifest.permission.CAMERA;
+    private static final String INTERNET_PERMISSION = Manifest.permission.INTERNET;
+    private static final String VIBRATE_PERMISSION = Manifest.permission.VIBRATE;
+
+    private static final int MULTIPLE_PERMISSION_CODE = 0;
 
     private Tango tango;
 
@@ -57,9 +67,11 @@ public class ActivityMain extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        vibrator = (Vibrator)this.getSystemService(Context.VIBRATOR_SERVICE);
+        // vibrator = (Vibrator)this.getSystemService(Context.VIBRATOR_SERVICE);
 
-        metrics = new ClassMetrics();
+        // metrics = new ClassMetrics();
+
+        Log.d(TAG, "Entering onCreate()");
 
         DisplayManager displayManager = (DisplayManager) getSystemService(DISPLAY_SERVICE);
         if (displayManager != null)
@@ -89,67 +101,32 @@ public class ActivityMain extends Activity
     }
 
     @Override
-    protected void onResume()
+    protected void onStart()
     {
-        super.onResume();
+        super.onStart();
+        Log.d(TAG, "Entering onStart()");
 
         surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
-        if(!tangoConnected)
+        if(checkAndRequestPermissions())
         {
-            /* Start Tango connection on separate thread to avoid stutter */
-            tango = new Tango(ActivityMain.this, new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    synchronized (ActivityMain.this)
-                    {
-                        try
-                        {
-                            // tangoCameraPreview.connectToTangoCamera(tango, TangoCameraIntrinsics.TANGO_CAMERA_COLOR);
-                            TangoSupport.initialize();
+            bindTangoService();
 
-                            ArrayList<TangoCoordinateFramePair> framePairList = new ArrayList<>();
-                            framePairList.add(new TangoCoordinateFramePair(TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE, TangoPoseData.COORDINATE_FRAME_DEVICE));
-
-                            tango.connectListener(framePairList, new ClassTangoUpdateCallback(ActivityMain.this));
-
-                            TangoConfig tangoConfig = tango.getConfig(TangoConfig.CONFIG_TYPE_DEFAULT);
-                            tangoConfig.putBoolean(TangoConfig.KEY_BOOLEAN_COLORCAMERA, true);
-                            tangoConfig.putBoolean(TangoConfig.KEY_BOOLEAN_DEPTH, true);
-                            tangoConfig.putBoolean(TangoConfig.KEY_BOOLEAN_DRIFT_CORRECTION, true);
-                            tangoConfig.putBoolean(TangoConfig.KEY_BOOLEAN_LOWLATENCYIMUINTEGRATION, true);
-
-                            tangoConfig.putInt(TangoConfig.KEY_INT_DEPTH_MODE, TangoConfig.TANGO_DEPTH_MODE_POINT_CLOUD);
-
-                            // Finally connect Tango
-                            tango.connect(tangoConfig);
-                            tangoConnected = true;
-                            setDisplayRotation();
-                        }
-                        catch (TangoOutOfDateException e)
-                        {
-                            Log.e(TAG, "Tango core out of date, please update: " + e);
-                        }
-                        catch (TangoErrorException e)
-                        {
-                            Log.e(TAG, "Tango connection error: " + e);
-                        }
-                    }
-                }
-            });
-
+            vibrator = (Vibrator)this.getSystemService(Context.VIBRATOR_SERVICE);
             vibrateRunnable = new RunnableVibrate(ActivityMain.this);
+
+            metrics = new ClassMetrics();
         }
     }
 
     @Override
-    protected void onPause()
+    protected void onStop()
     {
+        super.onStop();
+
         synchronized (ActivityMain.this)
         {
-            if (tangoConnected)
+            if (tango != null)
             {
                 tango.disconnectCamera(TangoCameraIntrinsics.TANGO_CAMERA_COLOR);
                 tango.disconnect();
@@ -163,8 +140,77 @@ public class ActivityMain extends Activity
 
             vibrator.cancel();
         }
+    }
 
-        super.onPause();
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+    {
+        Log.d(TAG, "Permission callback called-------");
+
+        if(hasPermissions())
+        {
+            bindTangoService();
+
+            vibrator = (Vibrator)this.getSystemService(Context.VIBRATOR_SERVICE);
+            vibrateRunnable = new RunnableVibrate(ActivityMain.this);
+
+            metrics = new ClassMetrics();
+        }
+        else
+        {
+            Toast.makeText(this, "Virtual Cane requires additional permissions.", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void bindTangoService()
+    {
+        Log.d(TAG, "In bindTangoService()");
+        /* Start Tango connection on separate thread to avoid stutter */
+        tango = new Tango(ActivityMain.this, new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                synchronized (ActivityMain.this)
+                {
+                    try
+                    {
+                        // tangoCameraPreview.connectToTangoCamera(tango, TangoCameraIntrinsics.TANGO_CAMERA_COLOR);
+                        TangoSupport.initialize(tango);
+
+                        ArrayList<TangoCoordinateFramePair> framePairList = new ArrayList<>();
+                        framePairList.add(new TangoCoordinateFramePair(TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE, TangoPoseData.COORDINATE_FRAME_DEVICE));
+
+                        tango.connectListener(framePairList, new ClassTangoUpdateCallback(ActivityMain.this));
+
+                        TangoConfig tangoConfig = tango.getConfig(TangoConfig.CONFIG_TYPE_DEFAULT);
+                        tangoConfig.putBoolean(TangoConfig.KEY_BOOLEAN_COLORCAMERA, true);
+                        tangoConfig.putBoolean(TangoConfig.KEY_BOOLEAN_DEPTH, true);
+                        tangoConfig.putBoolean(TangoConfig.KEY_BOOLEAN_DRIFT_CORRECTION, true);
+                        tangoConfig.putBoolean(TangoConfig.KEY_BOOLEAN_LOWLATENCYIMUINTEGRATION, true);
+
+                        tangoConfig.putInt(TangoConfig.KEY_INT_DEPTH_MODE, TangoConfig.TANGO_DEPTH_MODE_POINT_CLOUD);
+
+                        // Finally connect Tango
+                        tango.connect(tangoConfig);
+                        tangoConnected = true;
+                        setDisplayRotation();
+                    }
+                    catch (TangoOutOfDateException e)
+                    {
+                        Log.e(TAG, "Tango core out of date, please update: " + e);
+                    }
+                    catch (TangoErrorException e)
+                    {
+                        Log.e(TAG, "Tango connection error: " + e);
+                    }
+                    catch(TangoInvalidException e)
+                    {
+                        Log.e(TAG, "Tango invalid exception: " + e);
+                    }
+                }
+            }
+        });
     }
 
     public ClassRenderer setupRenderer()
@@ -194,6 +240,44 @@ public class ActivityMain extends Activity
                 }
             }
         });
+    }
+
+    private boolean checkAndRequestPermissions()
+    {
+        int permissionInternet = ContextCompat.checkSelfPermission(this, INTERNET_PERMISSION);
+        int permissionVibrate = ContextCompat.checkSelfPermission(this, VIBRATE_PERMISSION);
+        int permissionCamera = ContextCompat.checkSelfPermission(this, CAMERA_PERMISSION);
+
+        List<String> permissionsRequired  = new ArrayList<>();
+
+        if(permissionCamera != PackageManager.PERMISSION_GRANTED)
+        {
+            permissionsRequired.add(CAMERA_PERMISSION);
+        }
+        if(permissionInternet != PackageManager.PERMISSION_GRANTED)
+        {
+            permissionsRequired.add(INTERNET_PERMISSION);
+        }
+        if(permissionVibrate != PackageManager.PERMISSION_GRANTED)
+        {
+            permissionsRequired.add(VIBRATE_PERMISSION);
+        }
+
+        if(!permissionsRequired.isEmpty())
+        {
+            ActivityCompat.requestPermissions(this, permissionsRequired.toArray(new String[permissionsRequired.size()]), MULTIPLE_PERMISSION_CODE);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean hasPermissions()
+    {
+        return ContextCompat.checkSelfPermission(this, INTERNET_PERMISSION) == PackageManager.PERMISSION_GRANTED
+                    && ContextCompat.checkSelfPermission(this, VIBRATE_PERMISSION) == PackageManager.PERMISSION_GRANTED
+                    && ContextCompat.checkSelfPermission(this, INTERNET_PERMISSION) == PackageManager.PERMISSION_GRANTED;
     }
 
     public RunnableVibrate getRunnableVibrate() { return this.vibrateRunnable; }
