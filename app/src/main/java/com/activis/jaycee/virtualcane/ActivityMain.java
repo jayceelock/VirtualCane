@@ -67,12 +67,6 @@ public class ActivityMain extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // vibrator = (Vibrator)this.getSystemService(Context.VIBRATOR_SERVICE);
-
-        // metrics = new ClassMetrics();
-
-        Log.d(TAG, "Entering onCreate()");
-
         DisplayManager displayManager = (DisplayManager) getSystemService(DISPLAY_SERVICE);
         if (displayManager != null)
         {
@@ -104,7 +98,6 @@ public class ActivityMain extends Activity
     protected void onStart()
     {
         super.onStart();
-        Log.d(TAG, "Entering onStart()");
 
         surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
@@ -126,6 +119,12 @@ public class ActivityMain extends Activity
 
         synchronized (ActivityMain.this)
         {
+            if(vibrator != null)
+            {
+                vibrateRunnable.setIsRunning(false);
+                vibrator.cancel();
+            }
+
             if (tango != null)
             {
                 tango.disconnectCamera(TangoCameraIntrinsics.TANGO_CAMERA_COLOR);
@@ -135,18 +134,13 @@ public class ActivityMain extends Activity
                 connectedGLThreadID = INVALID_TEXTURE_ID;
 
                 tangoConnected = false;
-                vibrateRunnable.setIsRunning(false);
             }
-
-            vibrator.cancel();
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
     {
-        Log.d(TAG, "Permission callback called-------");
-
         if(hasPermissions())
         {
             bindTangoService();
@@ -164,7 +158,6 @@ public class ActivityMain extends Activity
 
     private void bindTangoService()
     {
-        Log.d(TAG, "In bindTangoService()");
         /* Start Tango connection on separate thread to avoid stutter */
         tango = new Tango(ActivityMain.this, new Runnable()
         {

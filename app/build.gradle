@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "25.0.3"
+    compileSdkVersion 23
+    buildToolsVersion '25.0.3'
     defaultConfig {
         applicationId "com.activis.jaycee.virtualcane"
         minSdkVersion 19
-        targetSdkVersion 24
+        targetSdkVersion 23
         versionCode 1
         versionName "1.0"
     }
@@ -20,9 +20,9 @@ android {
 
 dependencies {
     apply from: '../version.gradle'
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile "org.rajawali3d:rajawali:1.1.777@aar"
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'org.rajawali3d:rajawali:1.1.777@aar'
     compile "com.google.tango:sdk-base:${release_version}"
     compile "com.google.tango:support-base:${release_version}"
-    compile "com.android.support:appcompat-v7:24.0.0"
+    compile 'com.android.support:appcompat-v7:23.0.0'
 }

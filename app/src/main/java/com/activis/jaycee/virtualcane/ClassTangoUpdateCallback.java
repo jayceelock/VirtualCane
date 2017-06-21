@@ -47,7 +47,7 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
     {
         TangoPoseData oglTdepthPose = TangoSupport.getPoseAtTime(
                 cloud.timestamp,
-                TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
+                TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,
                 TangoPoseData.COORDINATE_FRAME_CAMERA_COLOR,
                 TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
                 TangoSupport.TANGO_SUPPORT_ENGINE_TANGO,
@@ -55,7 +55,7 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
 
         TangoPoseData oglTcolorPose = TangoSupport.getPoseAtTime(
                 activityMain.getRGBTimestamp(),
-                TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
+                TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,
                 TangoPoseData.COORDINATE_FRAME_CAMERA_COLOR,
                 TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
                 TangoSupport.TANGO_SUPPORT_ENGINE_TANGO,
@@ -68,11 +68,12 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
                 activityMain.getDisplayRotation(),
                 oglTcolorPose.translation,
                 oglTcolorPose.rotation);
-            if(point != null)
-            {
-                depthPointPosition.setAll((double) point[0], (double) point[1], (double) point[2]);
-                depth = -point[2];
-            }
+
+        if(point != null)
+        {
+            depthPointPosition.setAll((double) point[0], (double) point[1], (double) point[2]);
+            depth = -point[2];
+        }
 
 
         double timestamp = activityMain.getTango().getPoseAtTime(0.0, new TangoCoordinateFramePair(TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE, TangoPoseData.COORDINATE_FRAME_DEVICE)).timestamp;
