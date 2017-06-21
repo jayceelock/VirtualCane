@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.hardware.display.DisplayManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Vibrator;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -49,6 +50,8 @@ public class ActivityMain extends Activity
     private Vibrator vibrator;
 
     private RunnableVibrate vibrateRunnable;
+    private Handler vibrateHandler;
+
     private ClassMetrics metrics;
 
     private boolean tangoConnected = false;
@@ -107,6 +110,8 @@ public class ActivityMain extends Activity
 
             vibrator = (Vibrator)this.getSystemService(Context.VIBRATOR_SERVICE);
             vibrateRunnable = new RunnableVibrate(ActivityMain.this);
+            vibrateHandler = new Handler();
+            vibrateHandler.post(vibrateRunnable);
 
             metrics = new ClassMetrics();
         }
@@ -274,6 +279,7 @@ public class ActivityMain extends Activity
     }
 
     public RunnableVibrate getRunnableVibrate() { return this.vibrateRunnable; }
+    public Handler getVibrateHandler() { return this.vibrateHandler; }
     public ClassMetrics getClassMetrics() { return this.metrics; }
     public Vibrator getVibrator() { return this.vibrator; }
     public Tango getTango() { return this.tango; }

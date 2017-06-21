@@ -35,45 +35,52 @@ class ClassMetrics
         time - x - y - z - roll - pitch (deg) - yaw - distToObs - vibration
          */
 
-        String csvString = "";
+        try
+        {
+            String csvString = "";
 
-        csvString += String.valueOf(this.timeStamp);
-        csvString += DELIMITER;
+            csvString += String.valueOf(this.timeStamp);
+            csvString += DELIMITER;
 
-        csvString += String.valueOf(poseData.translation[0]);
-        csvString += DELIMITER;
-        csvString += String.valueOf(poseData.translation[1]);
-        csvString += DELIMITER;
-        csvString += String.valueOf(poseData.translation[2]);
-        csvString += DELIMITER;
+            csvString += String.valueOf(poseData.translation[0]);
+            csvString += DELIMITER;
+            csvString += String.valueOf(poseData.translation[1]);
+            csvString += DELIMITER;
+            csvString += String.valueOf(poseData.translation[2]);
+            csvString += DELIMITER;
 
-        csvString += String.valueOf(poseData.rotation[0]);
-        csvString += DELIMITER;
-        csvString += String.valueOf(poseData.rotation[1]);
-        csvString += DELIMITER;
-        csvString += String.valueOf(poseData.rotation[2]);
-        csvString += DELIMITER;
-        csvString += String.valueOf(poseData.rotation[3]);
-        csvString += DELIMITER;
+            csvString += String.valueOf(poseData.rotation[0]);
+            csvString += DELIMITER;
+            csvString += String.valueOf(poseData.rotation[1]);
+            csvString += DELIMITER;
+            csvString += String.valueOf(poseData.rotation[2]);
+            csvString += DELIMITER;
+            csvString += String.valueOf(poseData.rotation[3]);
+            csvString += DELIMITER;
 
-        csvString += String.valueOf(distanceToObstacle);
-        csvString += DELIMITER;
+            csvString += String.valueOf(distanceToObstacle);
+            csvString += DELIMITER;
 
-        csvString += String.valueOf(vibrationIntensity);
-        csvString += DELIMITER;
+            csvString += String.valueOf(vibrationIntensity);
+            csvString += DELIMITER;
 
-        csvString += String.valueOf(0);
-        csvString += DELIMITER;
+            csvString += String.valueOf(0);
+            csvString += DELIMITER;
 
-        csvString += String.valueOf(0);
-        csvString += DELIMITER;
+            csvString += String.valueOf(0);
+            csvString += DELIMITER;
 
         /* WRITE TO WIFI PORT */
-        if(dataStreamer == null || dataStreamer.getStatus() != AsyncTask.Status.RUNNING)
+            if (dataStreamer == null || dataStreamer.getStatus() != AsyncTask.Status.RUNNING)
+            {
+                Log.d(TAG, "wifi transmitting");
+                dataStreamer = new WifiDataSend();
+                dataStreamer.execute(csvString);
+            }
+        }
+        catch(NullPointerException e)
         {
-            Log.d(TAG, "wifi transmitting");
-            dataStreamer = new WifiDataSend();
-            dataStreamer.execute(csvString);
+            Log.e(TAG, "NullPointerException: " + e);
         }
     }
 

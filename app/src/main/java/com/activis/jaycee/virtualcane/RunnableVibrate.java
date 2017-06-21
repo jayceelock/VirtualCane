@@ -27,12 +27,14 @@ class RunnableVibrate implements Runnable
         long[] pwmSignal = generatePWM(this.depth, VIBRATION_DELAY);
 
         activityMain.getVibrator().vibrate(pwmSignal, -1);
+
+        activityMain.getVibrateHandler().postDelayed(activityMain.getRunnableVibrate(), 100);
     }
 
     void setDepth(float depth)
     {
         this.depth = depth;
-        this.run();
+        // this.run();
     }
 
     public boolean getIsRunning()
@@ -51,7 +53,9 @@ class RunnableVibrate implements Runnable
         intensity = intensity >= 1.f ? 1.f : intensity;
 
         activityMain.getClassMetrics().updateVibrationIntensity(intensity);
-        //activityMain.getClassMetrics().writeWiFi();
+
+        /* Trigger WiFi write at a semi-constant rate */
+        activityMain.getClassMetrics().writeWiFi();
 
         long[] pwmSignal = {(long) ((1 - intensity) * duration), (long)(intensity * duration)};
 
