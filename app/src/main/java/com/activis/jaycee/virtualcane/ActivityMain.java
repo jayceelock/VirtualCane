@@ -98,9 +98,9 @@ public class ActivityMain extends Activity
     }
 
     @Override
-    protected void onStart()
+    protected void onResume()
     {
-        super.onStart();
+        super.onResume();
 
         surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
@@ -118,15 +118,16 @@ public class ActivityMain extends Activity
     }
 
     @Override
-    protected void onStop()
+    protected void onPause()
     {
-        super.onStop();
+        super.onPause();
 
         synchronized (ActivityMain.this)
         {
             if(vibrator != null)
             {
                 vibrateRunnable.setIsRunning(false);
+                vibrateHandler.removeCallbacks(vibrateRunnable);
                 vibrator.cancel();
             }
 
