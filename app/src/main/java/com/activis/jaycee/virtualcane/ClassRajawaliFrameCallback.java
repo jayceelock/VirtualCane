@@ -2,6 +2,7 @@ package com.activis.jaycee.virtualcane;
 
 import com.google.atap.tangoservice.TangoCameraIntrinsics;
 import com.google.atap.tangoservice.TangoErrorException;
+import com.google.atap.tangoservice.TangoPointCloudData;
 import com.google.atap.tangoservice.TangoPoseData;
 import com.projecttango.tangosupport.TangoSupport;
 
@@ -14,7 +15,7 @@ public class ClassRajawaliFrameCallback extends ASceneFrameCallback
 {
     private static final String TAG = ClassRajawaliFrameCallback.class.getSimpleName();
 
-    private ActivityMain activityMain;
+    private final ActivityMain activityMain;
 
     public ClassRajawaliFrameCallback(ActivityMain activityMain)
     {
@@ -33,6 +34,23 @@ public class ClassRajawaliFrameCallback extends ASceneFrameCallback
                 if(!activityMain.getIsTangoConnected())
                 {
                     return;
+                }
+
+                // Update point cloud data.
+                TangoPointCloudData pointCloud = activityMain.getPointCloudManager().getLatestPointCloud();
+                if (pointCloud != null)
+                {
+                    // Calculate the depth camera pose at the last point cloud update.
+                    TangoSupport.TangoMatrixTransformData transform =
+                            TangoSupport.getMatrixTransformAtTime(pointCloud.timestamp,
+                                    TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
+                                    TangoPoseData.COORDINATE_FRAME_CAMERA_DEPTH,
+                                    TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
+                                    TangoSupport.TANGO_SUPPORT_ENGINE_TANGO,
+                                    TangoSupport.ROTATION_IGNORED);
+                    if (transform.statusCode == TangoPoseData.POSE_VALID) {
+                        activityMain.getRenderer().updatePointCloud(pointCloud, transform.matrix);
+                    }
                 }
 
                 /* Set up scene camera to match camera intrinsics */
@@ -62,7 +80,7 @@ public class ClassRajawaliFrameCallback extends ASceneFrameCallback
                  {
                      /* Calculate the camera color pose at the camera frame update time in OpenGL engine. */
                      TangoPoseData poseData = TangoSupport.getPoseAtTime(activityMain.getRGBTimestamp(),
-                             TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
+                             TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,
                              TangoPoseData.COORDINATE_FRAME_CAMERA_COLOR,
                              TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
                              TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,

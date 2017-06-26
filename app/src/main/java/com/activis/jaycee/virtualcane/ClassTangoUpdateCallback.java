@@ -45,6 +45,8 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
     @Override
     public void onPointCloudAvailable(TangoPointCloudData cloud)
     {
+        activityMain.getPointCloudManager().updatePointCloud(cloud);
+
         TangoPoseData oglTdepthPose = TangoSupport.getPoseAtTime(
                 cloud.timestamp,
                 TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,

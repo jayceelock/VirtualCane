@@ -22,7 +22,9 @@ import com.google.atap.tangoservice.TangoCoordinateFramePair;
 import com.google.atap.tangoservice.TangoErrorException;
 import com.google.atap.tangoservice.TangoInvalidException;
 import com.google.atap.tangoservice.TangoOutOfDateException;
+import com.google.atap.tangoservice.TangoPointCloudData;
 import com.google.atap.tangoservice.TangoPoseData;
+import com.projecttango.tangosupport.TangoPointCloudManager;
 import com.projecttango.tangosupport.TangoSupport;
 
 import org.rajawali3d.view.SurfaceView;
@@ -43,6 +45,7 @@ public class ActivityMain extends Activity
     private static final int MULTIPLE_PERMISSION_CODE = 0;
 
     private Tango tango;
+    private TangoPointCloudManager pointCloudManager;
 
     private SurfaceView surfaceView;
     private ClassRenderer renderer;
@@ -91,6 +94,8 @@ public class ActivityMain extends Activity
                 public void onDisplayRemoved(int displayId) { }
             }, null);
         }
+
+        pointCloudManager = new TangoPointCloudManager();
 
         renderer = setupRenderer();
         surfaceView = (SurfaceView)findViewById(R.id.camera_surfaceview);
@@ -295,4 +300,5 @@ public class ActivityMain extends Activity
     public void setCameraPoseTimestamp(double cameraPoseTimestamp) { this.cameraPoseTimestamp = cameraPoseTimestamp; }
     public AtomicBoolean getIsFrameAvailable() { return  this.isFrameAvailable; }
     public SurfaceView getSurfaceView() { return this.surfaceView; }
+    public TangoPointCloudManager getPointCloudManager() { return this.pointCloudManager; }
 }

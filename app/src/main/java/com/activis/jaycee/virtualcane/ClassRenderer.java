@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.util.Log;
 import android.view.MotionEvent;
 
+import com.google.atap.tangoservice.TangoPointCloudData;
 import com.google.atap.tangoservice.TangoPoseData;
 import com.projecttango.tangosupport.TangoSupport;
 
@@ -24,6 +25,9 @@ import javax.microedition.khronos.opengles.GL10;
 public class ClassRenderer extends Renderer
 {
     private static final String TAG = ClassRenderer.class.getSimpleName();
+    private static final float CAMERA_NEAR = 0.01f;
+    private static final float CAMERA_FAR = 200f;
+    private static final int MAX_NUMBER_OF_POINTS = 60000;
 
     private float[] textureCoords0 = new float[]{0.0F, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F, 0.0F};
 
@@ -32,6 +36,7 @@ public class ClassRenderer extends Renderer
     private ATexture tangoCameraTexture;
     private ScreenQuad screenBackgroundQuad;
     private Sphere point;
+    private ClassPointcloud pointCloud;
 
     public ClassRenderer(Context context)
     {
@@ -74,6 +79,14 @@ public class ClassRenderer extends Renderer
         point.setPosition(0, 0, -1);
 
         getCurrentScene().addChild(point);
+
+        /* Add PointCloud */
+        pointCloud= new ClassPointcloud(MAX_NUMBER_OF_POINTS, 4);
+        getCurrentScene().addChild(pointCloud);
+        // getCurrentScene().setBackgroundColor(Color.WHITE);
+        getCurrentCamera().setNearPlane(CAMERA_NEAR);
+        getCurrentCamera().setFarPlane(CAMERA_FAR);
+        // getCurrentCamera().setFieldOfView(37.5);
     }
 
     @Override
@@ -118,6 +131,20 @@ public class ClassRenderer extends Renderer
         float[] textureCoords = TangoSupport.getVideoOverlayUVBasedOnDisplayRotation(textureCoords0, rotation);
         screenBackgroundQuad.getGeometry().setTextureCoords(textureCoords, true);
         screenBackgroundQuad.getGeometry().reload();
+    }
+
+    /**
+     * Updates the rendered point cloud. For this, we need the point cloud data and the device pose
+     * at the time the cloud data was acquired.
+     * NOTE: This needs to be called from the OpenGL rendering thread.
+     */
+    public void updatePointCloud(TangoPointCloudData pointCloudData, float[] openGlTdepth)
+    {
+        pointCloud.updateCloud(pointCloudData.numPoints, pointCloudData.points);
+        Matrix4 openGlTdepthMatrix = new Matrix4(openGlTdepth);
+        pointCloud.setPosition(openGlTdepthMatrix.getTranslation());
+        // Conjugating the Quaternion is needed because Rajawali uses left-handed convention.
+        pointCloud.setOrientation(new Quaternion().fromMatrix(openGlTdepthMatrix));//.conjugate());
     }
 
     /* Update the scene camera based on the provided pose in Tango start of service frame.
