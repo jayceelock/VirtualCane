@@ -49,14 +49,30 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
 
         TangoPoseData oglTdepthPose = TangoSupport.getPoseAtTime(
                 cloud.timestamp,
+                TangoPoseData.COORDINATE_FRAME_CAMERA_DEPTH,
+                TangoPoseData.COORDINATE_FRAME_CAMERA_COLOR,
+                TangoSupport.TANGO_SUPPORT_ENGINE_TANGO,
+                TangoSupport.TANGO_SUPPORT_ENGINE_TANGO,
+                TangoSupport.ROTATION_IGNORED);
+
+        TangoPoseData oglTcolorPose = TangoSupport.getPoseAtTime(
+                activityMain.getRGBTimestamp(),
                 TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,
                 TangoPoseData.COORDINATE_FRAME_CAMERA_COLOR,
                 TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
                 TangoSupport.TANGO_SUPPORT_ENGINE_TANGO,
                 TangoSupport.ROTATION_IGNORED);
 
-        TangoPoseData oglTcolorPose = TangoSupport.getPoseAtTime(
-                activityMain.getRGBTimestamp(),
+        float[] depthPoint = TangoSupport.getDepthAtPointNearestNeighbor(cloud,
+                new double[] {0.0, 0.0, 0.0},
+                new double[] {0.0, 0.0, 0.0, 1.0},
+                0.5f, 0.5f,
+                activityMain.getDisplayRotation(),
+                oglTdepthPose.translation,
+                oglTdepthPose.rotation);
+
+        oglTdepthPose = TangoSupport.getPoseAtTime(
+                cloud.timestamp,
                 TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,
                 TangoPoseData.COORDINATE_FRAME_CAMERA_COLOR,
                 TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
@@ -71,21 +87,15 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
                 oglTcolorPose.translation,
                 oglTcolorPose.rotation);
 
-        if(point != null)
+        if(depthPoint != null && point != null)
         {
             depthPointPosition.setAll((double) point[0], (double) point[1], (double) point[2]);
-            depth = -point[2];
+            depth = depthPoint[2];
         }
-
 
         double timestamp = activityMain.getTango().getPoseAtTime(0.0, new TangoCoordinateFramePair(TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE, TangoPoseData.COORDINATE_FRAME_DEVICE)).timestamp;
 
         activityMain.getRunnableVibrate().setDepth(depth);
-
-        if(!activityMain.getRunnableVibrate().getIsRunning())
-        {
-            //activityMain.getRunnableVibrate().run();
-        }
 
         activityMain.getClassMetrics().updateDistanceToObstacle(depth);
         activityMain.getClassMetrics().updateTimestamp(timestamp);

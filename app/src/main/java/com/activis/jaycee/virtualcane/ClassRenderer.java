@@ -9,7 +9,6 @@ import com.google.atap.tangoservice.TangoPointCloudData;
 import com.google.atap.tangoservice.TangoPoseData;
 import com.projecttango.tangosupport.TangoSupport;
 
-import org.rajawali3d.Object3D;
 import org.rajawali3d.materials.Material;
 import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.StreamingTexture;
@@ -76,7 +75,7 @@ public class ClassRenderer extends Renderer
         pointMaterial.setColor(Color.GREEN);
         point = new Sphere(0.01f, 24, 24);
         point.setMaterial(pointMaterial);
-        point.setPosition(0, 0, -1);
+        point.setPosition(0, 0, 1);
 
         getCurrentScene().addChild(point);
 
@@ -96,17 +95,7 @@ public class ClassRenderer extends Renderer
 
     public boolean togglePointCloud(boolean isCloudEnabled)
     {
-        if(isCloudEnabled)
-        {
-            /* Add PointCloud */
-            // pointCloud = new ClassPointcloud(MAX_NUMBER_OF_POINTS, 4);
-            getCurrentScene().addChild(pointCloud);
-            // getCurrentScene().setBackgroundColor(Color.WHITE);
-        }
-        else
-        {
-            getCurrentScene().removeChild(pointCloud);
-        }
+        pointCloud.setVisible(isCloudEnabled);
 
         return !isCloudEnabled;
     }
@@ -115,16 +104,22 @@ public class ClassRenderer extends Renderer
     {
         if(point != null)
         {
-            Object3D obj = getCurrentScene().getChildrenCopy().get(1);
-            obj.setPosition(position.x, position.y, position.z);
+            point.setPosition(position.x, position.y, position.z);
             
-            if(position.z < -1.15)
+            if(Math.abs(position.z) > 1.15)
             {
-                obj.setColor(Color.GREEN);
+                point.setColor(Color.GREEN);
             }
+            else if(Math.abs(position.z) < 0.3)
+            {
+                point.setColor(Color.RED);
+            }
+
             else
             {
-                obj.setColor(Color.RED);
+                Vector3 color = new Vector3((Math.abs(position.z) * (-255 / 0.85) + 345) / 255, (Math.abs(position.z) * 255 / 0.85 - 90) / 255, 0.0);
+                point.setColor(color);
+                Log.d(TAG, String.format("r: %f g: %g b:%f", color.x, color.y, color.z));
             }
         }
     }
