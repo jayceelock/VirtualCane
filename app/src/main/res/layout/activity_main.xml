@@ -11,5 +11,14 @@
         android:id="@+id/camera_surfaceview"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_gravity="top" />
+        android:layout_gravity="top"
+        android:layout_weight="1"   />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/button_toggle_cloud"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:text="Toggle Point Cloud"/>
 </RelativeLayout>

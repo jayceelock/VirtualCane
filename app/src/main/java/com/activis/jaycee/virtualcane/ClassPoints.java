@@ -2,6 +2,7 @@ package com.activis.jaycee.virtualcane;
 
 import android.opengl.GLES10;
 import android.opengl.GLES20;
+import android.opengl.GLES30;
 
 import org.rajawali3d.Object3D;
 

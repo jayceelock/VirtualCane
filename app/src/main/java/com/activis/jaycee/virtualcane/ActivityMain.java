@@ -13,6 +13,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Display;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.atap.tangoservice.Tango;
@@ -22,7 +23,6 @@ import com.google.atap.tangoservice.TangoCoordinateFramePair;
 import com.google.atap.tangoservice.TangoErrorException;
 import com.google.atap.tangoservice.TangoInvalidException;
 import com.google.atap.tangoservice.TangoOutOfDateException;
-import com.google.atap.tangoservice.TangoPointCloudData;
 import com.google.atap.tangoservice.TangoPoseData;
 import com.projecttango.tangosupport.TangoPointCloudManager;
 import com.projecttango.tangosupport.TangoSupport;
@@ -58,6 +58,7 @@ public class ActivityMain extends Activity
     private ClassMetrics metrics;
 
     private boolean tangoConnected = false;
+    private boolean isCloudEnabled = false;
 
     private int displayRotation;
     private int connectedGLThreadID = INVALID_TEXTURE_ID;
@@ -99,7 +100,18 @@ public class ActivityMain extends Activity
 
         renderer = setupRenderer();
         surfaceView = (SurfaceView)findViewById(R.id.camera_surfaceview);
+        surfaceView.setPreserveEGLContextOnPause(true);
         surfaceView.setSurfaceRenderer(renderer);
+
+        findViewById(R.id.button_toggle_cloud).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                isCloudEnabled = renderer.togglePointCloud(isCloudEnabled);
+                Log.d(TAG, "Clicked, toggle status: " + isCloudEnabled);
+            }
+        });
     }
 
     @Override
@@ -108,6 +120,8 @@ public class ActivityMain extends Activity
         super.onResume();
 
         surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+
+        // isCloudEnabled = false;
 
         if(checkAndRequestPermissions())
         {
@@ -119,6 +133,8 @@ public class ActivityMain extends Activity
             vibrateHandler.post(vibrateRunnable);
 
             metrics = new ClassMetrics();
+
+            // isCloudEnabled = renderer.togglePointCloud(true);
         }
     }
 

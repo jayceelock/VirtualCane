@@ -97,6 +97,6 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
         activityMain.getRenderer().setDepthPoint(depthPointPosition);
 
         activityMain.getClassMetrics().updatePoseData(pose);
-        Log.d(TAG, String.format("Z: %f", -activityMain.getRenderer().getDepthPointPosition().z));
+        Log.v(TAG, String.format("Z: %f", -activityMain.getRenderer().getDepthPointPosition().z));
     }
 }

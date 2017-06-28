@@ -80,13 +80,12 @@ public class ClassRenderer extends Renderer
 
         getCurrentScene().addChild(point);
 
-        /* Add PointCloud */
-        pointCloud= new ClassPointcloud(MAX_NUMBER_OF_POINTS, 4);
+        pointCloud = new ClassPointcloud(MAX_NUMBER_OF_POINTS, 4);
         getCurrentScene().addChild(pointCloud);
-        // getCurrentScene().setBackgroundColor(Color.WHITE);
+
         getCurrentCamera().setNearPlane(CAMERA_NEAR);
         getCurrentCamera().setFarPlane(CAMERA_FAR);
-        // getCurrentCamera().setFieldOfView(37.5);
+        getCurrentCamera().setFieldOfView(37.5);
     }
 
     @Override
@@ -94,6 +93,23 @@ public class ClassRenderer extends Renderer
 
     @Override
     public void onTouchEvent(MotionEvent event) { }
+
+    public boolean togglePointCloud(boolean isCloudEnabled)
+    {
+        if(isCloudEnabled)
+        {
+            /* Add PointCloud */
+            // pointCloud = new ClassPointcloud(MAX_NUMBER_OF_POINTS, 4);
+            getCurrentScene().addChild(pointCloud);
+            // getCurrentScene().setBackgroundColor(Color.WHITE);
+        }
+        else
+        {
+            getCurrentScene().removeChild(pointCloud);
+        }
+
+        return !isCloudEnabled;
+    }
 
     public void setDepthPoint(Vector3 position)
     {

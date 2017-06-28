@@ -22,7 +22,7 @@ class RunnableVibrate implements Runnable
     public void run()
     {
         isRunning = true;
-        Log.i(TAG, String.format("Average depth is: %f", this.depth));
+        Log.v(TAG, String.format("Average depth is: %f", this.depth));
 
         long[] pwmSignal = generatePWM(this.depth, VIBRATION_DELAY);
 
