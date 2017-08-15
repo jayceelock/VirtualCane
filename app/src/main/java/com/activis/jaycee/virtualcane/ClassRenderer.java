@@ -1,7 +1,10 @@
 package com.activis.jaycee.virtualcane;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.util.Log;
 import android.view.MotionEvent;
 
@@ -12,9 +15,11 @@ import com.projecttango.tangosupport.TangoSupport;
 import org.rajawali3d.materials.Material;
 import org.rajawali3d.materials.textures.ATexture;
 import org.rajawali3d.materials.textures.StreamingTexture;
+import org.rajawali3d.materials.textures.Texture;
 import org.rajawali3d.math.Matrix4;
 import org.rajawali3d.math.Quaternion;
 import org.rajawali3d.math.vector.Vector3;
+import org.rajawali3d.primitives.Plane;
 import org.rajawali3d.primitives.ScreenQuad;
 import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
@@ -79,6 +84,7 @@ public class ClassRenderer extends Renderer
 
         getCurrentScene().addChild(point);
 
+        /* Add point cloud */
         pointCloud = new ClassPointcloud(MAX_NUMBER_OF_POINTS, 4);
         getCurrentScene().addChild(pointCloud);
 
@@ -100,33 +106,34 @@ public class ClassRenderer extends Renderer
         return !isCloudEnabled;
     }
 
-    public void setDepthPoint(Vector3 position)
+    public void setDepthPoint(Vector3 position, float z)
     {
         if(point != null)
         {
             point.setPosition(position.x, position.y, position.z);
             
-            if(Math.abs(position.z) > 1.15)
+            if(Math.abs(z) > 1.15)
             {
                 point.setColor(Color.GREEN);
             }
-            else if(Math.abs(position.z) < 0.3)
+            else if(Math.abs(z) < 0.3)
             {
                 point.setColor(Color.RED);
             }
 
             else
             {
-                Vector3 color = new Vector3((Math.abs(position.z) * (-255 / 0.85) + 345) / 255, (Math.abs(position.z) * 255 / 0.85 - 90) / 255, 0.0);
+                Vector3 color = new Vector3((Math.abs(z) * (-255 / 0.85) + 345) / 255., (Math.abs(z) * 255 / 0.85 - 90) / 255., 0.0);
                 point.setColor(color);
-                Log.d(TAG, String.format("r: %f g: %g b:%f", color.x, color.y, color.z));
+                //Log.d(TAG, String.format("zD: %f z: %f r: %f g: %g b:%f", z, position.z, color.x, color.y, color.z));
             }
+            Log.d(TAG, String.format("zD: %f z: %f", z, position.z));
         }
     }
 
     public Vector3 getDepthPointPosition()
     {
-        return getCurrentScene().getChildrenCopy().get(1).getPosition();
+        return point.getPosition();
     }
 
     /* Handle screen orientation changes.

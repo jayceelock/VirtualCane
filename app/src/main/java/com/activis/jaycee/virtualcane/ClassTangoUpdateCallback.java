@@ -57,7 +57,7 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
 
         TangoPoseData oglTcolorPose = TangoSupport.getPoseAtTime(
                 activityMain.getRGBTimestamp(),
-                TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,
+                TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
                 TangoPoseData.COORDINATE_FRAME_CAMERA_COLOR,
                 TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
                 TangoSupport.TANGO_SUPPORT_ENGINE_TANGO,
@@ -73,8 +73,8 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
 
         oglTdepthPose = TangoSupport.getPoseAtTime(
                 cloud.timestamp,
-                TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,
-                TangoPoseData.COORDINATE_FRAME_CAMERA_COLOR,
+                TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
+                TangoPoseData.COORDINATE_FRAME_CAMERA_DEPTH,
                 TangoSupport.TANGO_SUPPORT_ENGINE_OPENGL,
                 TangoSupport.TANGO_SUPPORT_ENGINE_TANGO,
                 TangoSupport.ROTATION_IGNORED);
@@ -104,7 +104,8 @@ class ClassTangoUpdateCallback extends Tango.TangoUpdateCallback
     @Override
     public void onPoseAvailable(TangoPoseData pose)
     {
-        activityMain.getRenderer().setDepthPoint(depthPointPosition);
+        activityMain.getRenderer().setDepthPoint(depthPointPosition, depth);
+        activityMain.setText(depth);
 
         activityMain.getClassMetrics().updatePoseData(pose);
         Log.v(TAG, String.format("Z: %f", -activityMain.getRenderer().getDepthPointPosition().z));

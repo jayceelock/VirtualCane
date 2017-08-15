@@ -14,6 +14,7 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.atap.tangoservice.Tango;
@@ -49,6 +50,8 @@ public class ActivityMain extends Activity
 
     private SurfaceView surfaceView;
     private ClassRenderer renderer;
+
+    private TextView textviewDepth;
 
     private Vibrator vibrator;
 
@@ -112,6 +115,8 @@ public class ActivityMain extends Activity
                 Log.d(TAG, "Clicked, toggle status: " + isCloudEnabled);
             }
         });
+
+        textviewDepth = (TextView)findViewById(R.id.textview_depth);
     }
 
     @Override
@@ -120,8 +125,6 @@ public class ActivityMain extends Activity
         super.onResume();
 
         surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
-
-        // isCloudEnabled = false;
 
         if(checkAndRequestPermissions())
         {
@@ -133,8 +136,6 @@ public class ActivityMain extends Activity
             vibrateHandler.post(vibrateRunnable);
 
             metrics = new ClassMetrics();
-
-            // isCloudEnabled = renderer.togglePointCloud(true);
         }
     }
 
@@ -317,4 +318,15 @@ public class ActivityMain extends Activity
     public AtomicBoolean getIsFrameAvailable() { return  this.isFrameAvailable; }
     public SurfaceView getSurfaceView() { return this.surfaceView; }
     public TangoPointCloudManager getPointCloudManager() { return this.pointCloudManager; }
+    public void setText(final double distance)
+    {
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                textviewDepth.setText(String.format("%.3fm", distance));
+            }
+        });
+    }
 }

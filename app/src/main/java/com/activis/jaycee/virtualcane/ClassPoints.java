@@ -82,6 +82,6 @@ public class ClassPoints extends Object3D
     {
         super.preRender();
         setDrawingMode(GLES20.GL_POINTS);
-        GLES10.glPointSize(5.0f);
+        GLES10.glPointSize(20.0f);
     }
 }
